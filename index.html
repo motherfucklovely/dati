@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<script src="js/lcRem.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" href="css/style.css" />
+	<title></title>
+	</head>
+	<body>
+		<div class="page sataGame">
+			<button class="starBtn">开始答题 </button>
+		</div>
+		<div class="page gaming">
+			<div class="clock">10</div>
+			<h1 class="timu"></h1>
+			<div class="main">
+				
+			</div>
+		</div>
+		<div class="page endGame">
+			
+			<h3>恭喜你答对<span class="num"></span>题</h3>
+			<h4>历史最高答题数: <span class="maxNum"></span></h4>
+			<div class="reStart"> 重新开始</div>
+			
+		</div>
+		
+	</body>
+	
+		<script src="js/ajax.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			var startBtn =document.querySelector('.starBtn');
+			var gaming =document.querySelector('.gaming');
+			var h1 = document.querySelector('.timu');
+			var main =document.querySelector('.main');
+			var newDiv=document.createElement('div');
+			var timuList = [];
+			var curretimu=null;
+			var score= 0;
+			var endPage =document.querySelector('.endGame');
+			var restar =document.querySelector('.reStart');
+			var clockID ;
+			var clockDom =document.querySelector('.clock');
+			endPage=document.querySelector('.endGame')
+			function renderTime(){
+				clock10()
+				var randomNum = parseInt(Math.random()*timuList.length);
+//				var a =Math.random();
+//				var b =a*timuList.length;
+//				var c =parseInt(b)
+//				console.log(a);
+//				console.log(timuList.length);
+//				console.log(b);
+//				console.log(c);
+			
+				var del =timuList.splice(randomNum,1)
+				curretimu =del[0]
+					console.log(del)
+				main.innerHTML="";
+				h1.innerHTML=curretimu.quiz;
+				
+				curretimu.options.forEach(function(item,index){
+					 var newDiv=document.createElement('div')
+					 newDiv.className="optionItem";
+					 newDiv.dataset.index=index+1;
+					 newDiv.innerHTML=(index+1)+"、"+item;
+					 main.appendChild(newDiv);	 
+ 				})
+			}
+				function clock10(){
+					 	var num =10;
+					 	clockDom.innerHTML=num;
+					 	clockID = setInterval(function(){
+					 		num--;
+					 		clockDom.innerHTML=num;
+					 		if(num ==0 ){
+					 			endgame();
+					 		}
+					 	},1000)
+				}
+					
+			ajax('js/dati.json',function(xhr){
+				timuList=JSON.parse(xhr.responseText);
+				console.log(timuList)
+				startBtn.onclick =function (){
+				gaming.style.zIndex=100;
+				renderTime();
+			}
+			})
+			
+		main.addEventListener('click',function(e){
+			console.log(e);
+			
+		if(e.target.className =="optionItem"){
+			clearInterval(clockID);
+			if(e.target.dataset.index == curretimu.answer){
+				score++;
+				e.target.style.background='yellowgreen';
+			setTimeout(function(){
+				renderTime();
+			},2000);
+			}else{
+				e.target.style.background='red';
+				var curAnswerDom =document.querySelector('.optionItem:nth-child('+curretimu.answer+')')
+				curAnswerDom. style .background='yellowgreen';
+				setTimeout(function(){
+					endgame();
+				},2000)
+		}
+		}})
+			
+		restar.onclick=function(){
+			location.reload();
+		}
+		function endgame(){
+					endPage.style.zIndex=1000;
+					scoreDom=document.querySelector('.num')
+					scoreDom.innerHTML=score
+					scoreMaxDom=document.querySelector('.maxNum')
+					if(localStorage.datiMaxscore){
+						if(localStorage.datiMaxscore<score){
+							localStorage.datiMaxscore=score;
+						}
+						scoreMaxDom.innerHTML=localStorage.datiMaxscore;
+					}else{
+						localStorage.datiMaxscore=score;
+						scoreMaxDom.innerHTML=score;
+					}
+					
+		}
+		</script>
+</html>
